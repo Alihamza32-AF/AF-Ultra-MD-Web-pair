@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AF Ultra MD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --neon1: #00ff88;
+      --neon2: #00e6ff;
+      --neon3: #ff00ff;
+      --neon4: #ff8800;
+      --kali: #0097e6;
+      --purple: #8a2be2;
+      --pink: #ff1493;
+      --blue: #1e90ff;
+      --cyan: #00ffff;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      font-family: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    canvas#matrix {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+    }
+    
+    /* Header */
+    .kali-snake {
+      width: min(1000px, 92vw);
+      margin: 18px auto 8px auto;
+      filter: drop-shadow(0 0 12px rgba(0, 151, 230, 0.6));
+    }
+    
+    .kali-snake svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    
+    .kali-snake path {
+      fill: none;
+      stroke: var(--kali);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 14 10;
+      animation: snakeMove 6s linear infinite;
+    }
+    
+    @keyframes snakeMove {
+      to {
+        stroke-dashoffset: -240;
+      }
+    }
+    
+    /* Stage */
+    .stage {
+      position: relative;
+      width: 360px;
+      height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    
+    /* Rings */
+    .ring, .ring-inner, .ring-mid, .ring-outer {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(1px);
+    }
+    
+    .ring {
+      width: 340px;
+      height: 340px;
+      border: 4px solid transparent;
+      border-top-color: var(--neon1);
+      border-right-color: var(--neon2);
+      border-bottom-color: var(--neon3);
+      border-left-color: var(--neon4);
+      animation: spin 6s linear infinite;
+      box-shadow: 0 0 15px var(--neon1), 
+                  0 0 25px var(--neon2),
+                  0 0 35px var(--neon3);
+    }
+    
+    .ring-inner {
+      width: 290px;
+      height: 290px;
+      border: 3px solid transparent;
+      border-top-color: var(--neon4);
+      border-right-color: var(--neon1);
+      border-bottom-color: var(--neon2);
+      border-left-color: var(--neon3);
+      animation: spinReverse 8s linear infinite;
+      box-shadow: 0 0 15px var(--neon4), 
+                  0 0 25px var(--neon1);
+    }
+    
+    .ring-mid {
+      width: 380px;
+      height: 380px;
+      border: 3px dashed rgba(255, 255, 255, 0.18);
+      animation: spin 12s linear infinite;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+    
+    .ring-outer {
+      width: 420px;
+      height: 420px;
+      border: 2px dotted rgba(0, 255, 136, 0.25);
+      animation: spinReverse 14s linear infinite;
+      filter: blur(0px);
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.3);
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    @keyframes spinReverse {
+      to {
+        transform: rotate(-360deg);
+      }
+    }
+    
+    /* Equalizer */
+    .eq-ring {
+      position: absolute;
+      inset: 0;
+      width: 360px;
+      height: 360px;
+      display: block;
+      pointer-events: none;
+    }
+    
+    .bar {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform-origin: 0 0;
+      width: 3px;
+      height: 70px;
+      background: linear-gradient(180deg, var(--neon2), var(--neon1));
+      box-shadow: 0 0 8px var(--neon2), 0 0 14px var(--neon1);
+      border-radius: 2px;
+      opacity: 0.9;
+      animation: thump 900ms ease-in-out infinite;
+    }
+    
+    @keyframes thump {
+      0%, 100% {
+        transform: var(--rot) scaleY(0.65);
+      }
+      50% {
+        transform: var(--rot) scaleY(1.25);
+      }
+    }
+    
+    /* Card */
+    .card {
+      position: relative;
+      z-index: 2;
+      width: 255px;
+      height: 255px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 55% 40%, #1e1e1e, #0f0f0f 65%);
+      border: 4px solid var(--neon1);
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.45), 
+                  inset 0 0 25px rgba(0, 255, 136, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: bass 1.8s ease-in-out infinite;
+    }
+    
+    @keyframes bass {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 26px rgba(0, 255, 136, 0.35), 
+                    inset 0 0 22px rgba(0, 255, 136, 0.08);
+      }
+      50% {
+        transform: scale(1.12);
+        box-shadow: 0 0 60px rgba(0, 255, 136, 0.85), 
+                    inset 0 0 30px rgba(0, 255, 136, 0.14);
+      }
+    }
+    
+    .card h1 {
+      font-size: 18px;
+      margin: 0 0 12px 0;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 10px var(--neon1);
+      background: linear-gradient(45deg, var(--neon1), var(--neon2), var(--neon3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+    
+    .card input, .card button {
+      width: 78%;
+      border-radius: 10px;
+      border: 1px solid #333;
+      outline: none;
+    }
+    
+    .card input {
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #0e0e0e;
+      color: #fff;
+      margin-bottom: 10px;
+      transition: 0.25s;
+    }
+    
+    .card input:focus {
+      border-color: var(--neon1);
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+    }
+    
+    .card button {
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(45deg, var(--neon1), #007bff);
+      color: #000;
+      border: none;
+      transition: transform 0.25s, filter 0.25s;
+    }
+    
+    .card button:hover {
+      transform: scale(1.05);
+      filter: brightness(1.15);
+    }
+    
+    /* WhatsApp Button */
+    .whatsapp-channel-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 25px 0;
+      background: linear-gradient(45deg, #25D366, #128C7E, #075E54);
+      color: white;
+      font-weight: 800;
+      padding: 14px 25px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 16px;
+      box-shadow: 0 0 20px rgba(37, 211, 102, 0.8);
+      transition: all 0.3s ease;
+      z-index: 3;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .whatsapp-channel-btn:before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0.2),
+        rgba(255, 255, 255, 0)
+      );
+      transform: rotate(30deg);
+      animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+      0% {
+        left: -50%;
+      }
+      100% {
+        left: 100%;
+      }
+    }
+    
+    .whatsapp-channel-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 30px rgba(37, 211, 102, 1);
+    }
+    
+    /* Panel */
+    .panel {
+      margin-top: 20px;
+      width: min(520px, 92vw);
+      background: rgba(12, 12, 12, 0.84);
+      border: 1px solid #222;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 0 18px rgba(0, 255, 136, 0.25);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .panel .label {
+      font-size: 13px;
+      opacity: 0.85;
+    }
+    
+    .code-box {
+      flex: 1;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      color: var(--neon1);
+      font-weight: 700;
+      font-size: 15px;
+      word-break: break-all;
+      box-shadow: inset 0 0 12px rgba(0, 255, 136, 0.07);
+    }
+    
+    .copy-btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 800;
+      background: linear-gradient(45deg, #007bff, var(--neon1));
+      color: #001;
+      transition: transform 0.2s, filter 0.2s;
+    }
+    
+    .copy-btn:hover {
+      transform: scale(1.05);
+      filter: brightness(1.15);
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: 25px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .footer a {
+      color: var(--neon2);
+      text-decoration: none;
+    }
+    
+    /* Mobile */
+    @media (max-width: 420px) {
+      .stage {
+        width: 300px;
+        height: 380px;
+      }
+      .ring {
+        width: 300px;
+        height: 300px;
+      }
+      .ring-inner {
+        width: 260px;
+        height: 260px;
+      }
+      .ring-mid {
+        width: 330px;
+        height: 330px;
+      }
+      .ring-outer {
+        width: 360px;
+        height: 360px;
+      }
+      .eq-ring {
+        width: 300px;
+        height: 300px;
+      }
+      .card {
+        width: 210px;
+        height: 210px;
+      }
+      .panel {
+        margin-top: 20px;
+        flex-direction: column;
+      }
+      .panel .label {
+        align-self: flex-start;
+      }
+      .whatsapp-channel-btn {
+        font-size: 14px;
+        padding: 12px 20px;
+      }
+    }
+    
+    /* Particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(0, 255, 136, 0.5);
+      animation: float 15s infinite linear;
+    }
+    
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(100vw) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    /* Loader */
+    .loader {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      animation: rotation 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    
+    @keyframes rotation {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="particles" id="particles"></div>
+
+  <div class="kali-snake">
+    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,60
+               C120,10 240,110 360,60
+               S600,10 720,60
+               960,110 1080,60
+               1200,10 1200,10" />
+    </svg>
+  </div>
+
+  <div class="stage">
+    <div class="ring-outer"></div>
+    <div class="ring-mid"></div>
+    <div class="ring"></div>
+    <div class="ring-inner"></div>
+
+    <div class="eq-ring" id="eq"></div>
+
+    <div class="card">
+      <h1>AF Ultra MD</h1>
+      <input id="number" type="text" placeholder="Enter WhatsApp Number" />
+      <button onclick="getCode()">Generate Code</button>
+    </div>
+  </div>
+
+  <a href="https://whatsapp.com/channel/0029VaU5UfBBVJl2sqYwbJ1t" class="whatsapp-channel-btn" target="_blank">
+    <i class="fab fa-whatsapp"></i> Join Our WhatsApp Channel
+  </a>
+
+  <div class="panel">
+    <div class="label">Pair Code:</div>
+    <div id="codeText" class="code-box">—</div>
+    <button class="copy-btn" onclick="copyCode()">📋 Copy</button>
+  </div>
+
+  <div class="footer">
+    <p>Developed by Ali Hamza | TEAM X 32</p>
+  </div>
+
+  <script>
+    // Matrix Background
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+    let animationId;
+    
+    function sizeCanvas(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    sizeCanvas();
+    
+    const resizeObserver = new ResizeObserver(entries => {
+      cancelAnimationFrame(animationId);
+      sizeCanvas();
+      initMatrix();
+    });
+    resizeObserver.observe(document.body);
+
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@#$%^&*";
+    const fontSize = 14;
+    let columns, drops;
+
+    function initMatrix() {
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array(columns).fill(1);
+    }
+    initMatrix();
+
+    function drawMatrix(){
+      ctx.fillStyle = "rgba(0,0,0,0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#00ff88";
+      ctx.font = `${fontSize}px monospace`;
+      
+      for(let i = 0; i < drops.length; i++){
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+        
+        ctx.fillText(text, x, y);
+        
+        if(y > canvas.height && Math.random() > 0.975){
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+      
+      animationId = requestAnimationFrame(drawMatrix);
+    }
+    drawMatrix();
+
+    // Build radial equalizer bars
+    const eq = document.getElementById('eq');
+    const BAR_COUNT = 36;
+    
+    for(let i = 0; i < BAR_COUNT; i++){
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      const angle = (360 / BAR_COUNT) * i;
+      bar.style.setProperty('--rot', `rotate(${angle}deg) translate(150px) rotate(-${angle}deg)`);
+      bar.style.animationDelay = `${(Math.random() * 800)}ms`;
+      bar.style.height = `${60 + Math.floor(Math.random() * 50)}px`;
+      eq.appendChild(bar);
+    }
+
+    // Create floating particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size between 2 and 6 pixels
+        const size = Math.random() * 4 + 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        
+        // Random color from neon palette
+        const colors = [
+          'rgba(0, 255, 136, 0.6)',
+          'rgba(0, 230, 255, 0.6)',
+          'rgba(255, 0, 255, 0.6)',
+          'rgba(255, 136, 0, 0.6)'
+        ];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Random animation duration
+        const duration = Math.random() * 20 + 10;
+        particle.style.animationDuration = `${duration}s`;
+        
+        // Random delay
+        particle.style.animationDelay = `-${Math.random() * 20}s`;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    createParticles();
+
+    // Fetch Pair Code
+    async function getCode(){
+      const number = document.getElementById("number").value.trim();
+      const codeBox = document.getElementById("codeText");
+      
+      if(!number){
+        alert("Please enter a valid WhatsApp number.");
+        return;
+      }
+      
+      // Basic validation
+      if(!/^[\d\s+\(\)\.-]+$/.test(number)){
+        alert("Please enter a valid number containing only digits and phone number symbols.");
+        return;
+      }
+      
+      codeBox.innerHTML = '<span class="loader"></span> Generating...';
+      
+      try {
+        const res = await fetch(`/code?number=${encodeURIComponent(number)}`);
+        
+        if (!res.ok) {
+          throw new Error(`Server responded with ${res.status}`);
+        }
+        
+        const data = await res.json();
+        
+        if(data.code){
+          codeBox.textContent = data.code;
+        } else if(data.error){
+          codeBox.textContent = `Error: ${data.error}`;
+        } else {
+          codeBox.textContent = "Invalid response from server";
+        }
+      } catch(err) {
+        console.error("Fetch error:", err);
+        codeBox.textContent = "Connection failed";
+        
+        // Fallback demo code for testing
+        setTimeout(() => {
+          codeBox.textContent = "DEMO-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+        }, 1000);
+      }
+    }
+
+    // Copy to Clipboard
+    function copyCode(){
+      const code = document.getElementById("codeText").textContent.trim();
+      
+      if(!code || code === "—" || code === "Connection failed" || 
+         code === "Invalid response from server" || code.includes("Error")){
+        alert("Please generate a valid code first.");
+        return;
+      }
+      
+      navigator.clipboard.writeText(code).then(() => {
+        alert("✅ Pair code copied to clipboard!");
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = code;
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          document.execCommand('copy');
+          alert("✅ Pair code copied!");
+        } catch (err) {
+          alert("❌ Failed to copy code");
+        }
+        
+        document.body.removeChild(textArea);
+      });
+    }
+
+    // Input validation
+    document.getElementById("number").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        getCode();
+      }
+    });
+  </script>
+</body>
+</html>
