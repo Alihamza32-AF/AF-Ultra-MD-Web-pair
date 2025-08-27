@@ -68,7 +68,7 @@ router.get('/', async (req, res) => {
                             `▸ Report bugs on GitHub\n\n` +
                             `_Powered by Team X 32 \n\n` +
                             `🔗 *Useful Links:*\n` +
-                            `▸ GitHub: your GitHub repo link\n` +
+                            `▸ GitHub: https://github.com/Alihamza32-AF/AF-Ultra-MD.git\n` +
                             `▸ https://whatsapp.com/channel/0029VbBizbiJJhzUW8fy4D46 `,
                         contextInfo: {
                             mentionedJid: [sock.user.id],
